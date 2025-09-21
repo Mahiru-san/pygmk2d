@@ -7,29 +7,28 @@ class GameObjectManager:
         """Generates a new GameObjectManager"""
         self.empty()
 
-    def add(self, game_object: GameObject, pool_type: str = "unknown") -> None:
+    def add(self, game_object: GameObject) -> None:
         """Add a new GameObject to GameObject list
 
         Args:
             game_object (GameObject): A game object
         """
-        self._game_objects.setdefault(pool_type, []).append(game_object)
+        self._game_objects.setdefault(game_object.get_type(), []).append(game_object)
 
-    def add_multi(
-        self, game_objects: Iterable[GameObject], pool_type: str = "unknown"
-    ) -> None:
+    def add_multi(self, game_objects: Iterable[GameObject]) -> None:
         """Add multiple GameObject to GameObject list
 
         Args:
             game_objects (list[GameObject]): A list containing multiple GameObject
         """
-        self._game_objects.setdefault(pool_type, []).extend(game_objects)
+        for game_object in game_objects:
+            self.add(game_object)
 
     def remove_pool(self, pool_type: str = "unknown") -> None:
-        """remove a GameObject from GameObject list
+        """remove a GameObject pool
 
         Args:
-            game_object (GameObject): A GameObject to remove
+            pool_type (str): Pool type to be removed
         """
         self._game_objects[pool_type].clear()
 
@@ -39,13 +38,13 @@ class GameObjectManager:
             for obj in self._game_objects.get(key, []):
                 yield obj
 
-    def get_pool(self, pool_type: str = "unknown") -> list[Any]:
+    def get_pool(self, pool_type: str) -> list[Any]:
         """get pool of specific type"""
         return self._game_objects.get(pool_type, [])
 
     def empty(self) -> None:
-        """empty GameObject list"""
-        self._game_objects: dict[str, list[GameObject]] = {"unknown": []}
+        """empty all GameObject pools"""
+        self._game_objects: dict[str, list[GameObject]] = {}
 
     def is_empty(self) -> bool:
         """is GameObject empty"""

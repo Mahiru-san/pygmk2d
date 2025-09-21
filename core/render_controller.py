@@ -1,7 +1,7 @@
 from typing import Iterable
 import pygame
 import color
-from requirements import GameObject
+from requirements import GameObject, Renderer
 
 
 class RenderController:
@@ -21,6 +21,10 @@ class RenderController:
         self.resize_main_screen()
         self._background_image = background_image
         self._background_color = color.BLACK
+        self._renderers: dict[str, Renderer] = {}
+
+    def register_renderer(self, object_type: str, renderer: Renderer) -> None:
+        self._renderers[object_type] = renderer
 
     def render(self, game_objects: Iterable[GameObject]) -> None:
         """Paint all the game objects on the screen
@@ -30,7 +34,9 @@ class RenderController:
         """
         self.clear_screen()
         for game_object in game_objects:
-            game_object.draw(self._main_screen)
+            renderer = self._renderers.get(game_object.get_type())
+            if renderer:
+                renderer.draw(self._main_screen, game_object)
         pygame.display.update()
 
     def resize_main_screen(self) -> None:
