@@ -55,7 +55,7 @@ class QuadTreeNode:
         self.ne_node = QuadTreeNode(
             depth=self.depth + 1,
             start_point=(mid_x, self.start_point[1]),
-            end_point=self.end_point,
+            end_point=(self.end_point[0], mid_y),
             reference_list=self.reference_list,
         )
         self.sw_node = QuadTreeNode(
