@@ -1,21 +1,20 @@
-from typing import Callable
+from typing import Any, Callable
 
 
 class EventManager:
     def __init__(self):
-        self.events = dict()
+        self._events: dict[str, list[Callable[..., Any]]] = {}
 
-    def add_event(self, event_type: str, functions: list[Callable]) -> None:
-        self.events[event_type] = functions
+    def register(self, event_type: str, function: Callable) -> None:
+        self._events.setdefault(event_type, []).append(function)
 
-    def remove_event(self, event_type: str) -> None:
-        self.events.pop(event_type)
+    def unregister(self, event_type: str, function: Callable) -> None:
+        if event_type in self._events.keys():
+            self._events[event_type].remove(function)
 
-    def post_event(self, event_type: str, *args, **kwargs) -> None:
-        self._get_func(event_type)(*args, **kwargs)
-
-    def _get_func(self, event_type_input: str) -> Callable:
-        for event_type, func in self.events.items():
-            if event_type_input == event_type:
-                return func
-        raise ValueError(f"Event type not exited: {event_type_input}") from None
+    def post(self, event_type: str, *args, **kwargs) -> None:
+        if event_type not in self._events.keys():
+            return
+        funcs = self._events[event_type]
+        for func in funcs:
+            func(*args, **kwargs)
