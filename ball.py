@@ -1,3 +1,4 @@
+import random
 import pygame
 from quadtree import QuadTreeNode
 
@@ -5,7 +6,7 @@ from quadtree import QuadTreeNode
 class Ball:
     def __init__(
         self,
-        radius: int,
+        radius: float,
         position: tuple[float, float] | pygame.Vector2,
         color: pygame.color.Color,
         mass: float,
@@ -35,7 +36,7 @@ class Ball:
     def get_position(self) -> pygame.Vector2:
         return self._position
 
-    def set_radius(self, radius: int) -> None:
+    def set_radius(self, radius: float) -> None:
         self._radius = radius
 
     def get_radius(self):
@@ -141,7 +142,7 @@ def is_ball_collided(ball_1: Ball, ball_2: Ball) -> bool:
     dx, dy = ball_1.get_position() - ball_2.get_position()
     total_radius = ball_1.get_radius() + ball_2.get_radius()
     distance_squared = dx * dx + dy * dy
-    return distance_squared <= total_radius * total_radius
+    return distance_squared - total_radius * total_radius <= -1e-6
 
 
 def exchange_momentum(ball_1: Ball, ball_2: Ball, coe: float) -> None:
@@ -172,21 +173,20 @@ def exchange_momentum(ball_1: Ball, ball_2: Ball, coe: float) -> None:
 
 
 def move_ball_colliding(ball_1: Ball, ball_2: Ball):
-    collision_point = (
-        ball_1.get_position() * ball_2.get_radius()
-        + ball_2.get_position() * ball_1.get_radius()
-    ) / (ball_1.get_radius() + ball_2.get_radius())
-    to_calculate_ball, remain_ball = (
-        (ball_1, ball_2)
-        if ball_1.get_radius() > ball_2.get_radius()
-        else (ball_2, ball_1)
+    if ball_1.get_position() == ball_2.get_position():
+        ball_1.move(ball_1.get_position() + (random.random(), random.random()))
+    delta_vector = ball_1.get_position() - ball_2.get_position()
+    center_distance = delta_vector.magnitude()
+    normal_vector = delta_vector / center_distance
+    offset_vector = (
+        ball_1.get_radius() + ball_2.get_radius() - center_distance
+    ) * normal_vector
+    total_mass = ball_1.get_mass() + ball_2.get_mass()
+    new_position_1 = (
+        ball_1.get_position() + ball_2.get_mass() / total_mass * offset_vector
     )
-    scale_to_radius = (
-        to_calculate_ball.get_position().distance_to(collision_point)
-        / to_calculate_ball.get_radius()
+    new_position_2 = (
+        ball_2.get_position() - ball_1.get_mass() / total_mass * offset_vector
     )
-    position_offset = (1 - scale_to_radius) * (
-        to_calculate_ball.get_position() - collision_point
-    )
-    to_calculate_ball.move(to_calculate_ball.get_position() + position_offset)
-    remain_ball.move(remain_ball.get_position() - position_offset)
+    ball_1.move(new_position_1)
+    ball_2.move(new_position_2)
