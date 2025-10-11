@@ -26,6 +26,10 @@ class RenderController:
     def register_renderer(self, object_type: str, renderer: Renderer) -> None:
         self._renderers[object_type] = renderer
 
+    def unregister_renderer(self, object_type: str) -> None:
+        if object_type in self._renderers:
+            del self._renderers[object_type]
+
     def render(self, game_objects: Iterable[GameObject]) -> None:
         """Paint all the game objects on the screen
 
