@@ -116,6 +116,16 @@ class Ball:
         )
 
 
+class BallRenderer:
+    def draw(self, screen: pygame.surface.Surface, obj: Ball) -> None:
+        pygame.draw.circle(
+            screen,
+            obj.get_color(),
+            (int(obj.get_position().x), int(obj.get_position().y)),
+            obj.get_radius(),
+        )
+
+
 def circle_intersects_rect(cx, cy, radius, rx_min, ry_min, rx_max, ry_max) -> bool:
     """
     Check if a circle intersects an axis-aligned rectangle.

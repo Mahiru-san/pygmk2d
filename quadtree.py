@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Optional, Protocol
+import pygame
+import color
 
 
 class QuadTreeObject(Protocol):
@@ -103,3 +105,29 @@ class QuadTreeNode:
 
     def update(self, resolution: tuple[int, int], time_step: float) -> None:
         pass
+
+
+class QuadTreeRenderer:
+    def draw(self, screen: pygame.surface.Surface, obj: QuadTreeNode) -> None:
+        for node in obj.iterate_nodes():
+            # if len(node.container) == 0:
+            #    continue
+            # if node.depth != 3:
+            #    continue
+            self._draw_node(screen, node)
+
+    def _draw_node(self, screen: pygame.surface.Surface, node: QuadTreeNode) -> None:
+        pygame.draw.rect(
+            screen,
+            color.RED,
+            (
+                pygame.Rect(
+                    node.start_point,
+                    (
+                        node.end_point[0] - node.start_point[0],
+                        node.end_point[1] - node.start_point[1],
+                    ),
+                )
+            ),
+            1,
+        )
