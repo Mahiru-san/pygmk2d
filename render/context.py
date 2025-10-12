@@ -1,8 +1,17 @@
 from typing import Protocol
+from target import RenderTarget
 
 
 class RenderContext(Protocol):
     """Abstract renderer interface for all rendering backends."""
+
+    def get_target(self) -> RenderTarget:
+        """Get the current render target."""
+        pass
+
+    def set_target(self, target: RenderTarget) -> None:
+        """Set the current render target."""
+        pass
 
     def clear(self, color: tuple[int, int, int]) -> None:
         """Clear the screen with the specified color."""
