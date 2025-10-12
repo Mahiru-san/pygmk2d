@@ -1,0 +1,75 @@
+from core.event_manager import EventManager
+from render.context import RenderContext
+from ecs.entity_manager import EntityManager
+from ecs.system import System
+from render.system import RenderSystem
+from input.manager import InputManager
+from core.timing import Clock
+
+
+class Engine:
+    def __init__(
+        self,
+        em: EntityManager,
+        render_context: RenderContext,
+        event_manager: EventManager,
+        input_manager: InputManager,
+        clock: Clock,
+        fixed_dt: float = 1 / 60,
+    ) -> None:
+        self.em = em
+        self.render_system = RenderSystem(em, render_context)
+        self.event_manager = event_manager
+        self.input_manager = input_manager
+        self.clock = clock
+        self.fixed_dt = fixed_dt
+        self._fixed_delta_systems: list[System] = []
+        self._variable_delta_systems: list[System] = []
+        self.min_frame_time = 1 / 60  # Default to 60 FPS
+        self.running = False
+
+    def set_min_fps(self, fps: int) -> None:
+        self.min_frame_time = 1 / fps
+
+    def set_fixed_dt(self, fixed_dt: float) -> None:
+        self.fixed_dt = fixed_dt
+
+    def add_fixed_delta_system(self, system: System) -> None:
+        self._fixed_delta_systems.append(system)
+
+    def add_variable_delta_system(self, system: System) -> None:
+        self._variable_delta_systems.append(system)
+
+    def enforce_fps_limit(self, start_time: float) -> None:
+        frame_time = self.clock.now() - start_time
+        if frame_time < self.min_frame_time:
+            sleep_time = self.min_frame_time - frame_time
+            self.clock.sleep(seconds=sleep_time)
+
+    def run(self) -> None:
+        self.running = True
+        accumulator = 0.0
+        self.clock.reset()
+        while self.running:
+            start_time = self.clock.now()
+            dt = self.clock.delta()
+            accumulator += dt
+
+            self.input_manager.poll()
+
+            while accumulator >= self.fixed_dt:
+                for sys in self._fixed_delta_systems:
+                    sys.update(self.fixed_dt)
+                accumulator -= self.fixed_dt
+
+            for sys in self._variable_delta_systems:
+                sys.update(dt)
+
+            self.event_manager.process_event_queue()
+
+            alpha = accumulator / self.fixed_dt
+            self.render_system.render(alpha)
+            self.enforce_fps_limit(start_time)
+
+    def stop(self) -> None:
+        self.running = False
