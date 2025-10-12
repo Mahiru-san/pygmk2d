@@ -16,7 +16,7 @@ class RenderSystem:
                 for eid in renderable_ids
                 if self.em.get_component(eid, RenderableWrapper)
             ),
-            key=lambda rw: rw.depth,
+            key=lambda r: (r.layer, r.depth),
         )
         for renderable in sorted_renderables:
             if renderable.visible:
