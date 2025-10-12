@@ -1,4 +1,4 @@
-from core.ecs.component import Component
+from ecs.component import Component
 
 
 class EntityManager:

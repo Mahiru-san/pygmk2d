@@ -1,4 +1,4 @@
-from core.ecs.entity_manager import EntityManager
+from ecs.entity_manager import EntityManager
 
 
 class System:
