@@ -23,15 +23,15 @@ class LogPolicy(Enum):
 
 
 @dataclass(frozen=True)
-class GameEvent:
-    type: EventType
+class Event:
+    type: EventType | str
     data: dict[str, Any]
 
 
-class EventManager:
+class EventChannel:
     def __init__(self, log_policy: LogPolicy = LogPolicy.PRINT) -> None:
-        self._events: dict[EventType | str, list[Callable[[GameEvent], Any]]] = {}
-        self._event_queue: deque[GameEvent] = deque()
+        self._events: dict[EventType | str, list[Callable[[Event], Any]]] = {}
+        self._event_queue: deque[Event] = deque()
         self.log_policy = log_policy
         self._user_event_prefix = "USER_EVENT_"
 
@@ -39,13 +39,13 @@ class EventManager:
         return f"{self._user_event_prefix}{name}"
 
     def register(
-        self, event_type: EventType | str, listener: Callable[[GameEvent], Any]
+        self, event_type: EventType | str, listener: Callable[[Event], Any]
     ) -> None:
         """Subscribe to a specific event type."""
         self._events.setdefault(event_type, []).append(listener)
 
     def unregister(
-        self, event_type: EventType | str, listener: Callable[[GameEvent], Any]
+        self, event_type: EventType | str, listener: Callable[[Event], Any]
     ) -> None:
         listeners = self._events.get(event_type)
         if listeners and listener in listeners:
@@ -53,9 +53,9 @@ class EventManager:
 
     def post(self, event_type: EventType | str, data: dict[str, Any] = None) -> None:
         """Enqueue an event to be processed later."""
-        self._event_queue.append(GameEvent(event_type, data or {}))
+        self._event_queue.append(Event(event_type, data or {}))
 
-    def dispatch(self, event: GameEvent) -> None:
+    def dispatch(self, event: Event) -> None:
         """Immediately process one event."""
         for listener in self._events.get(event.type, []):
             try:
@@ -71,3 +71,17 @@ class EventManager:
         while self._event_queue:
             event = self._event_queue.popleft()
             self.dispatch(event)
+
+
+class EventManager:
+    def __init__(self):
+        self._internal_event_channel = EventChannel()
+        self._external_event_channel = EventChannel()
+
+    @property
+    def internal(self) -> EventChannel:
+        return self._internal_event_channel
+
+    @property
+    def external(self) -> EventChannel:
+        return self._external_event_channel
