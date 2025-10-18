@@ -5,7 +5,7 @@ from core.event_manager import EventManager, EventType
 
 class InputManager:
     def __init__(self, event_manager: EventManager, provider: InputProvider) -> None:
-        self.event_manager = event_manager
+        self._external_bus = event_manager.external
         self.provider = provider
         self._pressed_keys: set[int] = set()
         self._pressed_buttons: set[int] = set()
@@ -21,37 +21,37 @@ class InputManager:
         if raw_event.type == RawInputType.KEY_DOWN:
             key = raw_event.data.get("key")
             if key is not None:
-                self.event_manager.post(EventType.KEY_DOWN, {"key": key})
+                self._external_bus.post(EventType.KEY_DOWN, {"key": key})
                 if key not in self._pressed_keys:
-                    self.event_manager.post(EventType.KEY_PRESSED, {"key": key})
+                    self._external_bus.post(EventType.KEY_PRESSED, {"key": key})
         elif raw_event.type == RawInputType.KEY_UP:
             key = raw_event.data.get("key")
             if key is not None:
-                self.event_manager.post(EventType.KEY_UP, {"key": key})
+                self._external_bus.post(EventType.KEY_UP, {"key": key})
         elif raw_event.type == RawInputType.MOUSE_MOVE:
             pos = raw_event.data.get("position")
             if pos is not None:
                 self._mouse_position = pos
-                self.event_manager.post(EventType.MOUSE_MOVE, {"position": pos})
+                self._external_bus.post(EventType.MOUSE_MOVE, {"position": pos})
         elif raw_event.type == RawInputType.MOUSE_BUTTON_DOWN:
             button = raw_event.data.get("button")
             if button is not None:
-                self.event_manager.post(EventType.MOUSE_BUTTON_DOWN, {"button": button})
+                self._external_bus.post(EventType.MOUSE_BUTTON_DOWN, {"button": button})
                 if button not in self._pressed_buttons:
-                    self.event_manager.post(
+                    self._external_bus.post(
                         EventType.MOUSE_BUTTON_PRESSED, {"button": button}
                     )
         elif raw_event.type == RawInputType.MOUSE_BUTTON_UP:
             button = raw_event.data.get("button")
             if button is not None:
-                self.event_manager.post(EventType.MOUSE_BUTTON_UP, {"button": button})
+                self._external_bus.post(EventType.MOUSE_BUTTON_UP, {"button": button})
         elif raw_event.type == RawInputType.RESIZE:
             size = raw_event.data.get("size")
             if size is not None:
                 self._window_size = size
-                self.event_manager.post(EventType.WINDOW_RESIZE, {"size": size})
+                self._external_bus.post(EventType.WINDOW_RESIZE, {"size": size})
         elif raw_event.type == RawInputType.QUIT:
-            self.event_manager.post(EventType.QUIT, {})
+            self._external_bus.post(EventType.QUIT, {})
 
     def _update_pressed_states(self, raw_event: RawInputEvent) -> None:
         if raw_event.type == RawInputType.KEY_DOWN:
