@@ -22,13 +22,15 @@ class EntityManager:
             self._components[component_type] = {}
         self._components[component_type][entity_id] = component
 
-    def remove_component(self, entity_id: int, component_type: type) -> None:
+    def remove_component(self, entity_id: int, component_type: type[Component]) -> None:
         component_type_name = component_type.__name__
         if component_type_name in self._components:
             if entity_id in self._components[component_type_name]:
                 del self._components[component_type_name][entity_id]
 
-    def get_component(self, entity_id: int, component_type: type) -> Component | None:
+    def get_component(
+        self, entity_id: int, component_type: type[Component]
+    ) -> Component | None:
         component_type_name = component_type.__name__
         return self._components.get(component_type_name, {}).get(entity_id, None)
 
@@ -39,7 +41,7 @@ class EntityManager:
                 result[component_type] = component_dict[entity_id]
         return result
 
-    def query_entities(self, component_types: list[type]) -> list[int]:
+    def query_entities(self, component_types: list[type[Component]]) -> list[int]:
         if not component_types:
             return []
 
