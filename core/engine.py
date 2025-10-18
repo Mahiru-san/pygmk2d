@@ -34,11 +34,11 @@ class Engine:
     def set_fixed_dt(self, fixed_dt: float) -> None:
         self.fixed_dt = fixed_dt
 
-    def add_fixed_delta_system(self, system: System) -> None:
-        self._fixed_delta_systems.append(system)
+    def add_fixed_delta_system(self, system: type[System]) -> None:
+        self._fixed_delta_systems.append(system(self.em))
 
-    def add_variable_delta_system(self, system: System) -> None:
-        self._variable_delta_systems.append(system)
+    def add_variable_delta_system(self, system: type[System]) -> None:
+        self._variable_delta_systems.append(system(self.em))
 
     def enforce_fps_limit(self, start_time: float) -> None:
         frame_time = self.clock.now() - start_time
@@ -56,6 +56,7 @@ class Engine:
             accumulator += dt
 
             self.input_manager.poll()
+            self.event_manager.external.process_event_queue()
 
             while accumulator >= self.fixed_dt:
                 for sys in self._fixed_delta_systems:
@@ -65,7 +66,7 @@ class Engine:
             for sys in self._variable_delta_systems:
                 sys.update(dt)
 
-            self.event_manager.process_event_queue()
+            self.event_manager.internal.process_event_queue()
 
             alpha = accumulator / self.fixed_dt
             self.render_system.render(alpha)
