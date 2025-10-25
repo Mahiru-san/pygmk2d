@@ -31,8 +31,9 @@ class RenderSystem:
 
     def render(self, alpha: float = 1.0) -> None:
         self.context.start_frame()
-        renderable_ids = self.em.query_entities([WorldRenderable, UIRenderable])
+        renderable_ids = self.em.query_by_type(WorldRenderable)
         self._render_world(renderable_ids, alpha)
+        renderable_ids = self.em.query_by_type(UIRenderable)
         self._render_ui(renderable_ids, alpha)
         self.context.end_frame()
 
@@ -42,7 +43,6 @@ class RenderSystem:
             (
                 (entity, self.em.get_component(entity, WorldRenderable))
                 for entity in renderable_ids
-                if self.em.get_component(entity, WorldRenderable)
             ),
             key=lambda pair: (pair[1].layer, pair[1].depth),
         )
@@ -62,4 +62,5 @@ class RenderSystem:
             key=lambda r: (r.layer, r.depth),
         )
         for renderable in renderables:
-            renderable.render(RenderParams(self.context, alpha))
+            if renderable.visible:
+                renderable.render(RenderParams(self.context, alpha))
