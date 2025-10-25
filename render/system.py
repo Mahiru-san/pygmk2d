@@ -1,24 +1,65 @@
+from typing import Iterable
+from render.camera import Camera
 from render.context import RenderContext
-from render.renderable import RenderableWrapper
+from render.renderable import (
+    UIRenderable,
+    WorldRenderable,
+    RenderParams,
+    RenderSpace,
+)
 from ecs.entity_manager import EntityManager
 
 
 class RenderSystem:
-    def __init__(self, em: EntityManager, render_context: RenderContext) -> None:
-        self.render_context = render_context
+    def __init__(
+        self,
+        em: EntityManager,
+        context: RenderContext,
+        camera: Camera,
+        debug: bool = False,
+    ) -> None:
         self.em = em
+        self.context = context
+        self.camera = camera
+        self.debug = debug
+
+    def set_context(self, context: RenderContext) -> None:
+        self.context = context
+
+    def set_camera(self, camera: Camera) -> None:
+        self.camera = camera
 
     def render(self, alpha: float = 1.0) -> None:
-        renderable_ids = self.em.query_entities([RenderableWrapper])
-        sorted_renderables: list[RenderableWrapper] = sorted(
+        self.context.start_frame()
+        renderable_ids = self.em.query_entities([WorldRenderable, UIRenderable])
+        self._render_world(renderable_ids, alpha)
+        self._render_ui(renderable_ids, alpha)
+        self.context.end_frame()
+
+    def _render_world(self, renderable_ids: Iterable[int], alpha: float) -> None:
+        self.context.set_space(RenderSpace.WORLD)
+        sorted_entity_renderable_pairs: list[tuple[int, WorldRenderable]] = sorted(
             (
-                self.em.get_component(eid, RenderableWrapper)
-                for eid in renderable_ids
-                if self.em.get_component(eid, RenderableWrapper)
+                (entity, self.em.get_component(entity, WorldRenderable))
+                for entity in renderable_ids
+                if self.em.get_component(entity, WorldRenderable)
             ),
+            key=lambda pair: (pair[1].layer, pair[1].depth),
+        )
+        for entity, renderable in sorted_entity_renderable_pairs:
+            transform = renderable.get_transform(self.em, entity)
+            if not transform:
+                continue
+            if renderable.visible or (renderable.debug_visible and self.debug):
+                renderable.render(
+                    RenderParams(self.context, alpha, transform, self.camera)
+                )
+
+    def _render_ui(self, renderable_ids: Iterable[int], alpha: float) -> None:
+        self.context.set_space(RenderSpace.SCREEN)
+        renderables: list[UIRenderable] = sorted(
+            (self.em.get_component(entity, UIRenderable) for entity in renderable_ids),
             key=lambda r: (r.layer, r.depth),
         )
-        for renderable in sorted_renderables:
-            if renderable.visible:
-                renderable.render(self.render_context, alpha)
-        self.render_context.present()
+        for renderable in renderables:
+            renderable.render(RenderParams(self.context, alpha))
