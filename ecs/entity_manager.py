@@ -41,7 +41,7 @@ class EntityManager:
                 result[component_type] = component_dict[entity_id]
         return result
 
-    def query_entities(self, component_types: list[type[Component]]) -> list[int]:
+    def query_entities(self, component_types: list[type[Component]]) -> tuple[int]:
         if not component_types:
             return []
 
@@ -54,4 +54,4 @@ class EntityManager:
             return []
 
         common_entities = set.intersection(*entity_sets)
-        return list(common_entities)
+        return tuple(common_entities)
