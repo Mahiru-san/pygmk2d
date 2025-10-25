@@ -22,6 +22,13 @@ class EntityManager:
             self._components[component_type] = {}
         self._components[component_type][entity_id] = component
 
+    def has_component(self, entity_id: int, component_type: type[Component]) -> bool:
+        component_type_name = component_type.__name__
+        return (
+            component_type_name in self._components
+            and entity_id in self._components[component_type_name]
+        )
+
     def remove_component(self, entity_id: int, component_type: type[Component]) -> None:
         component_type_name = component_type.__name__
         if component_type_name in self._components:
@@ -41,17 +48,22 @@ class EntityManager:
                 result[component_type] = component_dict[entity_id]
         return result
 
-    def query_entities(self, component_types: list[type[Component]]) -> tuple[int]:
+    def query_by_type(self, component_type: type[Component]) -> tuple[int]:
+        if component_type.__name__ not in self._components:
+            return ()
+        return tuple(self._components[component_type.__name__].keys())
+
+    def filter_entities(self, component_types: list[type[Component]]) -> tuple[int]:
         if not component_types:
             return []
 
         component_type_names = [ct.__name__ for ct in component_types]
-        entity_sets = [
-            set(self._components.get(ctn, {}).keys()) for ctn in component_type_names
-        ]
-
-        if not entity_sets:
-            return []
-
-        common_entities = set.intersection(*entity_sets)
-        return tuple(common_entities)
+        component_type_names.sort(key=lambda x: len(self._components.get(x, {})))
+        common_entities = set(self._components.get(component_type_names[0], {}).keys())
+        for component_type_name in component_type_names[1:]:
+            common_entities = set(
+                entity_id
+                for entity_id in common_entities
+                if entity_id in self._components.get(component_type_name, {})
+            )
+        return common_entities
