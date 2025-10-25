@@ -1,46 +1,17 @@
 from typing import Iterable
 from core.game_engine import Game
-from quadtree import QuadTreeNode
-from ball import Ball, is_ball_collided, move_ball_colliding, exchange_momentum
+from quadtree import QuadTreeNode, QuadTreeRenderer
+from ball import (
+    Ball,
+    BallRenderer,
+    is_ball_collided,
+    move_ball_colliding,
+    exchange_momentum,
+)
+from text_line import TextLine, TextLineRenderer
 import pygame
 import color
 import random
-
-
-class QuadTreeRenderer:
-    def draw(self, screen: pygame.surface.Surface, obj: QuadTreeNode) -> None:
-        for node in obj.iterate_nodes():
-            # if len(node.container) == 0:
-            #    continue
-            # if node.depth != 3:
-            #    continue
-            self._draw_node(screen, node)
-
-    def _draw_node(self, screen: pygame.surface.Surface, node: QuadTreeNode) -> None:
-        pygame.draw.rect(
-            screen,
-            color.RED,
-            (
-                pygame.Rect(
-                    node.start_point,
-                    (
-                        node.end_point[0] - node.start_point[0],
-                        node.end_point[1] - node.start_point[1],
-                    ),
-                )
-            ),
-            1,
-        )
-
-
-class BallRenderer:
-    def draw(self, screen: pygame.surface.Surface, obj: Ball) -> None:
-        pygame.draw.circle(
-            screen,
-            obj.get_color(),
-            (int(obj.get_position().x), int(obj.get_position().y)),
-            obj.get_radius(),
-        )
 
 
 def strict_collision_update(container: list[int], reference_list: list[Ball]) -> None:
@@ -53,8 +24,12 @@ def strict_collision_update(container: list[int], reference_list: list[Ball]) ->
                     reference_list[container[i]], reference_list[container[j]]
                 )
                 exchange_momentum(
-                    reference_list[container[i]], reference_list[container[j]], 0.001
+                    reference_list[container[i]], reference_list[container[j]], 0.0
                 )
+
+
+def get_kinetic_energy(ball: Ball) -> float:
+    return 0.5 * ball.get_mass() * ball.get_velocity().length_squared()
 
 
 def generate_random_balls(
@@ -95,7 +70,33 @@ class TestGame(Game):
         self.render_controller.set_background_color(color.BLACK)
         self.render_controller.register_renderer("ball", BallRenderer())
         self.render_controller.register_renderer("quadtree", QuadTreeRenderer())
-
+        self.render_controller.register_renderer("text_line", TextLineRenderer())
+        default_font = pygame.font.Font(pygame.font.get_default_font(), 16)
+        self.ball_size_text = TextLine(
+            "Ball Size: 1", default_font, color.WHITE, (10, 100)
+        )
+        self.total_kinetic_energy = TextLine(
+            "Kinetic Energy: 0", default_font, color.WHITE, (10, 130)
+        )
+        self.game_object_manager.add_multi(
+            [
+                TextLine("Press R to clear balls", default_font, color.WHITE, (10, 10)),
+                TextLine(
+                    "Press UP/DOWN to change ball size",
+                    default_font,
+                    color.WHITE,
+                    (10, 40),
+                ),
+                TextLine(
+                    "Click or hold left mouse button to spawn balls",
+                    default_font,
+                    color.WHITE,
+                    (10, 70),
+                ),
+                self.ball_size_text,
+                self.total_kinetic_energy,
+            ]
+        )
         self.game_object_manager.add_multi(
             generate_random_balls(1000, self.render_controller.get_resolution())
         )
@@ -129,11 +130,21 @@ class TestGame(Game):
         # self.game_object_manager.add_multi(preset_ball_list)
         self.set_fps(240)
         self.spawn_time_marker = 0
-        self.spawn_ball_size = 2
+        self.spawn_ball_size = 1
 
     def update(self) -> None:
         self._ball_collision_update()
+        self._ball_total_kinetic_energy_update()
         super().update()
+
+    def _ball_total_kinetic_energy_update(self):
+        game_object_list: list[Ball] = self.game_object_manager.get_pool("ball")
+        total_kinetic_energy = 0.0
+        for ball in game_object_list:
+            total_kinetic_energy += get_kinetic_energy(ball)
+        self.total_kinetic_energy.update_text(
+            f"Kinetic Energy: {total_kinetic_energy:.2f}"
+        )
 
     def _ball_collision_update(self):
         game_object_list: list[Ball] = self.game_object_manager.get_pool("ball")
@@ -174,13 +185,19 @@ class TestGame(Game):
                     self.spawn_ball_size += 1
                     if self.spawn_ball_size > 20:
                         self.spawn_ball_size = 20
+                    self.ball_size_text.update_text(
+                        f"Ball Size: {self.spawn_ball_size}"
+                    )
                 if event.key == pygame.K_DOWN:
                     self.spawn_ball_size -= 1
                     if self.spawn_ball_size < 1:
                         self.spawn_ball_size = 1
+                    self.ball_size_text.update_text(
+                        f"Ball Size: {self.spawn_ball_size}"
+                    )
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    self.spawn_time_marker = pygame.time.get_ticks()
+                    self.spawn_time_marker = pygame.time.get_ticks() + 200
                     self.game_object_manager.add(
                         Ball(
                             self.spawn_ball_size,
@@ -191,7 +208,7 @@ class TestGame(Game):
                         )
                     )
         if pygame.mouse.get_pressed(3)[0]:
-            if self.spawn_time_marker + 50 > pygame.time.get_ticks():
+            if self.spawn_time_marker + 10 > pygame.time.get_ticks():
                 return
             self.spawn_time_marker = pygame.time.get_ticks()
             mouse_position = pygame.mouse.get_pos()
