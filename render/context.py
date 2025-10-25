@@ -1,5 +1,6 @@
 from typing import Protocol
 from target import RenderTarget
+from renderable import RenderSpace
 
 
 class RenderContext(Protocol):
@@ -13,70 +14,6 @@ class RenderContext(Protocol):
         """Set the current render target."""
         pass
 
-    def clear(self, color: tuple[int, int, int]) -> None:
-        """Clear the screen with the specified color."""
-        pass
-
-    def draw_line(
-        self,
-        start_pos: tuple[int, int],
-        end_pos: tuple[int, int],
-        color: tuple[int, int, int],
-        width: int = 1,
-    ) -> None:
-        """Draw a line on the screen."""
-        pass
-
-    def draw_circle(
-        self,
-        center: tuple[int, int],
-        radius: int,
-        color: tuple[int, int, int],
-        width: int = 0,
-    ) -> None:
-        """Draw a circle on the screen."""
-        pass
-
-    def draw_solid_circle(
-        self, center: tuple[int, int], radius: int, color: tuple[int, int, int]
-    ) -> None:
-        """Draw a solid circle on the screen."""
-        pass
-
-    def draw_rect(
-        self,
-        rect: tuple[int, int, int, int],
-        color: tuple[int, int, int],
-        width: int = 0,
-    ) -> None:
-        """Draw a rectangle on the screen."""
-        pass
-
-    def draw_solid_rect(
-        self, rect: tuple[int, int, int, int], color: tuple[int, int, int]
-    ) -> None:
-        """Draw a solid rectangle on the screen."""
-        pass
-
-    def draw_text(
-        self,
-        text: str,
-        font: str,
-        position: tuple[int, int],
-        color: tuple[int, int, int],
-    ) -> None:
-        """Draw text on the screen."""
-        pass
-
-    def draw_image(
-        self,
-        image_path: str,
-        position: tuple[int, int],
-        size: tuple[int, int] | None = None,
-    ) -> None:
-        """Draw an image on the screen."""
-        pass
-
     def get_resolution(self) -> tuple[int, int]:
         """Get the current screen resolution."""
         pass
@@ -85,6 +22,35 @@ class RenderContext(Protocol):
         """Set the screen resolution."""
         pass
 
-    def present(self) -> None:
-        """Present the rendered frame to the display."""
+    def start_frame(self) -> None:
+        """Begin a new frame for rendering."""
+        pass
+
+    def end_frame(self) -> None:
+        """End the current frame for rendering."""
+        pass
+
+    def draw_texture(
+        self,
+        texture_id: int,
+        position: tuple[float, float],
+        size: tuple[float, float],
+        rotation: float = 0.0,
+    ) -> None:
+        """Draw a texture on the screen."""
+        pass
+
+    def draw_shape(
+        self,
+        shape_type: str,
+        position: tuple[float, float],
+        size: tuple[float, float],
+        color: tuple[int, int, int],
+        rotation: float = 0.0,
+    ) -> None:
+        """Draw a shape on the screen."""
+        pass
+
+    def set_space(self, space: RenderSpace) -> None:
+        """Set the current rendering space (e.g., 'world' or 'screen')."""
         pass
