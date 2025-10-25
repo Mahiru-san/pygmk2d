@@ -1,6 +1,6 @@
 import pygame
-from core.render_controller import RenderController
-from core.game_object_manager import GameObjectManager
+from old_architecture.render_controller import RenderController
+from old_architecture.game_object_manager import GameObjectManager
 from core.event_manager import EventManager
 from abc import ABC, abstractmethod
 
