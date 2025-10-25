@@ -1,5 +1,5 @@
 from typing import Iterable
-from core.game_engine import Game
+from old_architecture.game_engine import Game
 from quadtree import QuadTreeNode, QuadTreeRenderer
 from ball import (
     Ball,
