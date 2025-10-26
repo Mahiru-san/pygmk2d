@@ -28,6 +28,10 @@ class Event:
     data: dict[str, Any]
 
 
+class EventListenerError(Exception):
+    pass
+
+
 class EventChannel:
     def __init__(self, log_policy: LogPolicy = LogPolicy.PRINT) -> None:
         self._events: dict[EventType | str, list[Callable[[Event], Any]]] = {}
@@ -62,9 +66,11 @@ class EventChannel:
                 listener(event)
             except Exception as e:
                 if self.log_policy == LogPolicy.PRINT:
-                    print(f"Error in event listener: {e}")
+                    print(f"Error in event listener: {listener.__name__}")
                 elif self.log_policy == LogPolicy.RAISE:
-                    raise
+                    raise EventListenerError(
+                        f"Error in event listener: {listener.__name__}"
+                    ) from e
 
     def process_event_queue(self) -> None:
         """Process all queued events."""
