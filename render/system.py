@@ -1,13 +1,13 @@
 from typing import Iterable
-from render.camera import Camera
-from render.context import RenderContext
-from render.renderable import (
+from .camera import Camera
+from .context import RenderContext
+from .renderable import (
     UIRenderable,
     WorldRenderable,
     RenderParams,
     RenderSpace,
 )
-from ecs.entity_manager import EntityManager
+from ..ecs.entity_manager import EntityManager
 
 
 class RenderSystem:

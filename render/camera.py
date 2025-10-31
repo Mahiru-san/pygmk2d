@@ -1,4 +1,4 @@
-from render.transform import Transform
+from .transform import Transform
 
 
 class Camera:

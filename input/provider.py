@@ -1,5 +1,5 @@
 from typing import Protocol, Iterable
-from events import RawInputEvent
+from .events import RawInputEvent
 
 
 class InputProvider(Protocol):

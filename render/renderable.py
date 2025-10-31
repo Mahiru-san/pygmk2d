@@ -3,16 +3,11 @@ from enum import Enum, auto
 from typing import Callable, Optional
 import weakref
 
-from ecs.component import Component
-from ecs.entity_manager import EntityManager
-from render.camera import Camera
-from render.context import RenderContext
-from render.transform import Transform
-
-
-class RenderSpace(Enum):
-    SCREEN = auto()
-    WORLD = auto()
+from ..ecs.component import Component
+from ..ecs.entity_manager import EntityManager
+from .camera import Camera
+from .context import RenderContext, RenderSpace
+from .transform import Transform
 
 
 @dataclass(frozen=True)

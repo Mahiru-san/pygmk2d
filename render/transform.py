@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from ecs.component import Component
+from ..ecs.component import Component
 
 
 @dataclass

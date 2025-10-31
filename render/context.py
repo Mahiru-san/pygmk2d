@@ -1,6 +1,11 @@
 from typing import Protocol
-from target import RenderTarget
-from renderable import RenderSpace
+from enum import Enum, auto
+from .target import RenderTarget
+
+
+class RenderSpace(Enum):
+    SCREEN = auto()
+    WORLD = auto()
 
 
 class RenderContext(Protocol):

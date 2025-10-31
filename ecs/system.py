@@ -1,4 +1,4 @@
-from ecs.entity_manager import EntityManager
+from .entity_manager import EntityManager
 
 
 class System:

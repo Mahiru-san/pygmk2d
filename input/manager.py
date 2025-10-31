@@ -1,6 +1,6 @@
-from events import RawInputEvent, RawInputType
-from provider import InputProvider
-from core.event_manager import EventManager, EventType
+from .events import RawInputEvent, RawInputType
+from .provider import InputProvider
+from ..core.event_manager import EventManager, EventType
 
 
 class InputManager:
