@@ -49,29 +49,31 @@ class Engine:
 
     def run(self) -> None:
         self.running = True
-        accumulator = 0.0
+        self.accumulator = 0.0
         self.clock.reset()
         while self.running:
             start_time = self.clock.now()
             dt = self.clock.delta()
-            accumulator += dt
-
-            self.input_manager.poll()
-            self.event_manager.external.process_event_queue()
-
-            while accumulator >= self.fixed_dt:
-                for sys in self._fixed_delta_systems:
-                    sys.update(self.fixed_dt)
-                accumulator -= self.fixed_dt
-
-            for sys in self._variable_delta_systems:
-                sys.update(dt)
-
-            self.event_manager.internal.process_event_queue()
-
-            alpha = accumulator / self.fixed_dt
-            self.render_system.render(alpha)
+            self.step(dt)
             self.enforce_fps_limit(start_time)
+
+    def step(self, dt: float) -> None:
+        self.accumulator += dt
+        self.input_manager.poll()
+        self.event_manager.external.process_event_queue()
+
+        while self.accumulator >= self.fixed_dt:
+            for sys in self._fixed_delta_systems:
+                sys.update(self.fixed_dt)
+            self.accumulator -= self.fixed_dt
+
+        for sys in self._variable_delta_systems:
+            sys.update(dt)
+
+        self.event_manager.internal.process_event_queue()
+
+        alpha = self.accumulator / self.fixed_dt
+        self.render_system.render(alpha)
 
     def stop(self) -> None:
         self.running = False
