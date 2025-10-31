@@ -1,11 +1,12 @@
-from core.event_manager import EventManager
-from input.provider import InputProvider
-from render.context import RenderContext
-from ecs.entity_manager import EntityManager
-from ecs.system import System
-from render.system import RenderSystem
-from input.manager import InputManager
-from core.timing import Clock
+from .event_manager import EventManager
+from ..input.provider import InputProvider
+from ..render.context import RenderContext
+from ..ecs.entity_manager import EntityManager
+from ..ecs.system import System
+from ..render.system import RenderSystem
+from ..input.manager import InputManager
+from .timing import Clock
+from ..render.camera import Camera
 
 
 class Engine:
@@ -16,10 +17,11 @@ class Engine:
         event_manager: EventManager,
         input_provider: InputProvider,
         clock: Clock,
+        camera: Camera,
         fixed_dt: float = 1 / 60,
     ) -> None:
         self.em = em
-        self.render_system = RenderSystem(em, render_context)
+        self.render_system = RenderSystem(em, render_context, camera)
         self.event_manager = event_manager
         self.input_manager = InputManager(event_manager, input_provider)
         self.clock = clock
@@ -27,6 +29,7 @@ class Engine:
         self._fixed_delta_systems: list[System] = []
         self._variable_delta_systems: list[System] = []
         self.min_frame_time = 1 / 60  # Default to 60 FPS
+        self.accumulator = 0.0
         self.running = False
 
     def set_max_fps(self, fps: int) -> None:
