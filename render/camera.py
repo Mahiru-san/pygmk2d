@@ -19,8 +19,8 @@ class Camera:
         self.zoom = zoom
 
     def world_to_screen(self, world_pos: tuple[float, float]) -> tuple[float, float]:
-        screen_x = (world_pos[0] - self.position[0]) * self.zoom
-        screen_y = (world_pos[1] - self.position[1]) * self.zoom
+        screen_x = (world_pos[0] - self.position[0]) * self.zoom + self.viewport[0] / 2
+        screen_y = (world_pos[1] - self.position[1]) * self.zoom + self.viewport[1] / 2
         return (screen_x, screen_y)
 
     def size_to_screen(self, world_size: tuple[float, float]) -> tuple[float, float]:
@@ -30,10 +30,15 @@ class Camera:
 
     def transform_rect(
         self, world_pos: tuple[float, float], world_size: tuple[float, float]
-    ) -> tuple[float, float, float, float]:
+    ) -> tuple[tuple[float, float], tuple[float, float]]:
         screen_pos = self.world_to_screen(world_pos)
         screen_size = self.size_to_screen(world_size)
         return (screen_pos, screen_size)
+
+    def screen_to_world(self, screen_pos: tuple[float, float]) -> tuple[float, float]:
+        world_x = (screen_pos[0] - self.viewport[0] / 2) / self.zoom + self.position[0]
+        world_y = (screen_pos[1] - self.viewport[1] / 2) / self.zoom + self.position[1]
+        return (world_x, world_y)
 
     def is_visible(self, transform: Transform, bounds: tuple[float, float]) -> bool:
         screen_pos = self.world_to_screen(transform.position)
