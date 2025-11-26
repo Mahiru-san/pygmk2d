@@ -7,11 +7,9 @@ from dataclasses import dataclass
 class EventType(Enum):
     KEY_DOWN = auto()
     KEY_UP = auto()
-    KEY_PRESSED = auto()
     MOUSE_MOVE = auto()
     MOUSE_BUTTON_DOWN = auto()
     MOUSE_BUTTON_UP = auto()
-    MOUSE_BUTTON_PRESSED = auto()
     WINDOW_RESIZE = auto()
     QUIT = auto()
 
@@ -61,6 +59,7 @@ class EventChannel:
 
     def dispatch(self, event: Event) -> None:
         """Immediately process one event."""
+        print(f"Dispatching event: {event.type}")
         for listener in self._events.get(event.type, []):
             try:
                 listener(event)

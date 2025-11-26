@@ -22,25 +22,19 @@ class InputManager:
             key = raw_event.data.get("key")
             if key is not None:
                 self._external_bus.post(EventType.KEY_DOWN, {"key": key})
-                if key not in self._pressed_keys:
-                    self._external_bus.post(EventType.KEY_PRESSED, {"key": key})
         elif raw_event.type == RawInputType.KEY_UP:
             key = raw_event.data.get("key")
             if key is not None:
                 self._external_bus.post(EventType.KEY_UP, {"key": key})
         elif raw_event.type == RawInputType.MOUSE_MOVE:
-            pos = raw_event.data.get("position")
+            pos = raw_event.data.get("pos")
             if pos is not None:
                 self._mouse_position = pos
-                self._external_bus.post(EventType.MOUSE_MOVE, {"position": pos})
+                self._external_bus.post(EventType.MOUSE_MOVE, {"pos": pos})
         elif raw_event.type == RawInputType.MOUSE_BUTTON_DOWN:
             button = raw_event.data.get("button")
             if button is not None:
                 self._external_bus.post(EventType.MOUSE_BUTTON_DOWN, {"button": button})
-                if button not in self._pressed_buttons:
-                    self._external_bus.post(
-                        EventType.MOUSE_BUTTON_PRESSED, {"button": button}
-                    )
         elif raw_event.type == RawInputType.MOUSE_BUTTON_UP:
             button = raw_event.data.get("button")
             if button is not None:
