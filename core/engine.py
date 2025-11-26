@@ -56,8 +56,8 @@ class Engine:
         self.clock.reset()
         while self.running:
             start_time = self.clock.now()
-            dt = self.clock.delta()
-            self.step(dt)
+            self.dt = self.clock.delta()
+            self.step(self.dt)
             self.enforce_fps_limit(start_time)
 
     def step(self, dt: float) -> None:
