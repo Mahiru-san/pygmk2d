@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Protocol, Any
 
 
 class RenderTarget(Protocol):
@@ -18,4 +18,8 @@ class RenderTarget(Protocol):
 
     def resize(self, size: tuple[int, int]) -> None:
         """Resize the render target to the given size."""
+        pass
+
+    def get_surface(self) -> Any:
+        """Get the underlying surface or buffer of the render target."""
         pass
