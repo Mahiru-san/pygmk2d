@@ -13,7 +13,7 @@ class EntityManager:
 
     def remove_entity(self, entity_id: int) -> None:
         for component_dict in self._components.values():
-            if entity_id in component_dict:
+            if entity_id in component_dict.keys():
                 del component_dict[entity_id]
 
     def add_component(self, entity_id: int, component: Component) -> None:
