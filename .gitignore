@@ -1,2 +1,4 @@
 __*__
 .pytest_*/
+.coverage
+.vscode/
