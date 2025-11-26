@@ -37,7 +37,7 @@ class RenderContext(Protocol):
 
     def draw_texture(
         self,
-        texture_id: int,
+        texture_id: str,
         position: tuple[float, float],
         size: tuple[float, float],
         rotation: float = 0.0,
