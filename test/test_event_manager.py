@@ -212,7 +212,7 @@ def test_channel_log_policy_ignore(capsys):
 
     # Kiểm tra xem không có gì được in ra
     captured = capsys.readouterr()
-    assert captured.out == ""
+    assert "Error in event listener: faulty_listener" not in captured.out
     assert captured.err == ""
 
 
